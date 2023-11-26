@@ -33,6 +33,12 @@ sealed interface DAO{
     @Query("SELECT * FROM stats WHERE water > 0.0")
     fun getWaterStats(): Flow<List<Stats>>
 
+    @Query("SELECT * FROM stats WHERE calories > 0.0")
+    fun getCaloriesStats(): Flow<List<Stats>>
+
+    @Query("SELECT * FROM stats WHERE workouts > 0.0")
+    fun getWorkoutStats(): Flow<List<Stats>>
+
     @Query("Delete FROM stats")
     suspend fun delAllStats()
 

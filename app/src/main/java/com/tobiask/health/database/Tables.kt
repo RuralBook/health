@@ -10,11 +10,10 @@ data class Goals(
 
     val water: Int = 2000,
     val waterProgress: Int = 0,
-    val calories: Double = 2500.0,
-    val caloriesProgress: Double = 0.0,
+    val calories: Int = 2500,
+    val caloriesProgress: Int = 0,
     val workouts: Int = 5,
-    val workoutsProgress: Double = 0.0,
-
+    val workoutsProgress: Int = 0,
     val date: String
 )
 
@@ -25,6 +24,6 @@ data class Stats(
     val waterType: String = "water",
     val water: Double = 0.0,
     val calories: Double = 0.0,
-    val workouts: Int = 0,
+    val workouts: Double = 0.0,
     val date: String
 )

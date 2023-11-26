@@ -66,7 +66,10 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
 
     if (goals.value.id != 2 && goals.value.date != "") {
         if (LocalDate.parse(goals.value.date).isBefore(LocalDate.now())) {
-            viewModel.deleteAllStats()
+            viewModel.deleteAllStats(goals.value)
+        }
+        if (LocalDate.parse(goals.value.date).monthValue != LocalDate.now().monthValue) {
+            viewModel.deleteAllStatsMonthly(goals.value)
         }
         full.value = true
     }
@@ -83,7 +86,7 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                     .wrapContentWidth(Alignment.Start)
             ) {
                 ProgressCircle(
-                    percentage = if (goals.value.id != 2) (goals.value.workoutsProgress * goals.value.workouts).toFloat() else 0f,
+                    percentage = if (goals.value.id != 2) (goals.value.workoutsProgress.toFloat() / goals.value.workouts).toFloat() else 0f,
                     number = if (goals.value.id != 2) goals.value.workouts.toDouble() else 0.0,
                     color = Color(0xffc4342d),
                     colorTrans = Color(0x8fc4342d),
@@ -91,7 +94,7 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                     textColor = MaterialTheme.colorScheme.onBackground,
                     description = stringResource(id = R.string.workouts),
                     onClick = {
-
+                              navController.navigate(Screen.WorkoutScreen.route)
                     },
                     onLongClick = {}
                 )
@@ -109,14 +112,14 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                     .wrapContentWidth(Alignment.Start)
             ) {
                 ProgressCircle(
-                    percentage = .55f,
-                    number = 5.0,
+                    percentage = if (goals.value.id != 2) (goals.value.caloriesProgress.toFloat() / goals.value.calories) else 0f,
+                    number = if (goals.value.id != 2) goals.value.calories.toDouble() else 0.0,
                     color = Color(0xffff8c00),
                     colorTrans = Color(0x8fff8c00),
                     radius = 90.dp,
                     textColor = MaterialTheme.colorScheme.onBackground,
                     description = stringResource(id = R.string.calories),
-                    onClick = {},
+                    onClick = {navController.navigate(Screen.CaloriesScreen.route)},
                     onLongClick = {}
                 )
             }
@@ -143,7 +146,7 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
             }
         }
         Column(Modifier.fillMaxSize(0.5f), verticalArrangement = Arrangement.Center) {
-            Button(onClick = { viewModel.deleteAllStats() }) {
+            Button(onClick = { viewModel.deleteAllStatsMonthly(goals.value) }) {
                 Text(text = "Reset")
             }
         }

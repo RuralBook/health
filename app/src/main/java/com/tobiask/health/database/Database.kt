@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [Stats::class, Goals::class],
-    version = 3
+    version = 2
 )
 abstract class Database : RoomDatabase() {
     abstract val dao: DAO

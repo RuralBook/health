@@ -18,8 +18,10 @@ import androidx.room.Room
 import com.tobiask.health.database.Database
 import com.tobiask.health.navigation.Navigation
 import com.tobiask.health.navigation.Screen
+import com.tobiask.health.screens.caloriesScreen.CaloriesScreen
 import com.tobiask.health.screens.mainScreen.DashboardScreen
 import com.tobiask.health.screens.water_screen.WaterScreen
+import com.tobiask.health.screens.workoutsScreen.WorkoutScreen
 import com.tobiask.health.ui.theme.HealthTheme
 import kotlinx.coroutines.CoroutineScope
 
@@ -47,6 +49,14 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.WaterScreen.route){
                             WaterScreen(db.dao)
+                        }
+
+                        composable(route = Screen.CaloriesScreen.route){
+                            CaloriesScreen(db.dao)
+                        }
+                        
+                        composable(route = Screen.WorkoutScreen.route){
+                            WorkoutScreen(dao = db.dao)
                         }
                     }
                 }

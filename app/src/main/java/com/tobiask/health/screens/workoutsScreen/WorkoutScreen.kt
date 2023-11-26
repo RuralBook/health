@@ -1,4 +1,4 @@
-package com.tobiask.health.screens.water_screen
+package com.tobiask.health.screens.workoutsScreen
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -61,32 +61,32 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun WaterScreen(dao: DAO) {
+fun WorkoutScreen(dao: DAO) {
 
     val context = LocalContext.current
 
 
-    val viewModel = viewModel<WaterScreenViewModel>(
+    val viewModel = viewModel<WorkoutScreenViewModel>(
         factory =
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return WaterScreenViewModel(dao) as T
+                return WorkoutScreenViewModel(dao) as T
             }
         }
     )
 
     val goals = viewModel.dao.getGoals(1).collectAsState(initial = Goals(id = 2, date = ""))
-    val stats = viewModel.dao.getWaterStats().collectAsState(initial = listOf(Stats(id = 2, date = "")))
+    val stats = viewModel.dao.getWorkoutStats().collectAsState(initial = listOf(Stats(id = 2, date = "")))
     val popUp = viewModel.addDrink.collectAsState()
     val popUpChangeGoal = viewModel.changeGoal.collectAsState()
     if (goals.value.id  != 2) {
 
-        if (popUp.value){
-            AddWater(viewModel = viewModel, goals.value)
-        }
+        /*if (popUp.value){
+            AddWorkout(viewModel = viewModel, goals.value)
+        }*/
 
         if (popUpChangeGoal.value){
-            ChangeWaterGoal(viewModel = viewModel, goals = goals.value)
+            ChangeWorkoutGoal(viewModel = viewModel, goals = goals.value)
         }
 
         Scaffold(Modifier.fillMaxSize(), topBar = {
@@ -97,7 +97,23 @@ fun WaterScreen(dao: DAO) {
             })
         }, floatingActionButton = {
             FloatingActionButton(onClick = {
-                viewModel.popUpAddDrink()
+                //viewModel.popUpAddWorkout()
+                viewModel.updateWorkoutStats(
+                    Stats(
+                        workouts = 1.0,
+                        date = LocalTime.now().withNano(0).withSecond(0).toString()
+                    ),
+                    Goals(
+                        1,
+                        water = goals.value.water,
+                        waterProgress = goals.value.waterProgress,
+                        calories = goals.value.calories,
+                        caloriesProgress = goals.value.caloriesProgress,
+                        workouts = goals.value.workouts,
+                        workoutsProgress = goals.value.workoutsProgress + 1,
+                        date = LocalDate.now().toString(),
+                    )
+                )
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
@@ -119,10 +135,11 @@ fun WaterScreen(dao: DAO) {
                             .height(300.dp)
                             .wrapContentWidth(Alignment.Start)
                     ) {
-                        ProgressCircle(percentage = (goals.value.waterProgress.toFloat() / goals.value.water),
-                            number = goals.value.water.toDouble(),
-                            color = Color(0xff4cb9fa),
-                            colorTrans = Color(0x8f4cb9fa),
+                        ProgressCircle(
+                            percentage = (goals.value.workoutsProgress.toFloat() / goals.value.workouts),
+                            number = goals.value.workouts.toDouble(),
+                            color = Color(0xffc4342d),
+                            colorTrans = Color(0x8fc4342d),
                             radius = 140.dp,
                             textColor = MaterialTheme.colorScheme.onBackground,
                             description = "",
@@ -146,16 +163,22 @@ fun WaterScreen(dao: DAO) {
                             },
                             backgroundCardEndColor = MaterialTheme.colorScheme.secondary,
                             onBackgroundEndClick = {
-                                viewModel.deleteWaterStats(row)
+                                viewModel.deleteWorkoutStats(row)
                                 viewModel.updateGoals(Goals(
-                                    id = goals.value.id,
+                                    1,
                                     water = goals.value.water,
-                                    waterProgress = goals.value.waterProgress - row.water.roundToInt(),
-                                    date = goals.value.date
+                                    waterProgress = goals.value.waterProgress,
+                                    calories = goals.value.calories,
+                                    caloriesProgress = goals.value.caloriesProgress,
+                                    workouts = goals.value.workouts,
+                                    workoutsProgress = goals.value.workoutsProgress - 1,
+                                    date = LocalDate.now().toString(),
                                 ))
-                            }
+                            },
+                            closeOnBackgroundClick = true,
+                            enableSwipe = true
                         ) {
-                            WaterItem(date = row.date, amount = row.water.toInt(), type = row.waterType, percentage = ((row.water / goals.value.water)*100))
+                            WorkoutItem(date = row.date, percentage = ((row.workouts / goals.value.workouts)*100))
                             //Log.d("percentage", ((row.water / goals.value.water)).toString())
                         }
                         Spacer(modifier = Modifier.height(15.dp))
@@ -169,10 +192,10 @@ fun WaterScreen(dao: DAO) {
 
 
 @Composable
-fun WaterItem(
+fun WorkoutItem(
     date: String,
-    amount: Int,
-    type: String,
+    //amount: Int,
+    //type: String,
     percentage: Double
 ) {
     ElevatedCard(
@@ -180,7 +203,7 @@ fun WaterItem(
         Modifier
             .padding(top = 10.dp)
             .fillMaxWidth()
-            , elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        , elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(Modifier.padding(15.dp)) {
             Row(
@@ -188,8 +211,8 @@ fun WaterItem(
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 Text(text = date, fontWeight = FontWeight.SemiBold)
-                Text(text = "${amount}ML", fontWeight = FontWeight.Bold)
-                Text(text = type)
+                //Text(text = "${amount}ML", fontWeight = FontWeight.Bold)
+                Text(text = "Workout")
                 Text(text = "~ ${percentage.roundToInt()}%")
             }
         }
@@ -199,35 +222,35 @@ fun WaterItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddWater(viewModel: WaterScreenViewModel, goals: Goals){
+fun AddWorkout(viewModel: WorkoutScreenViewModel, goals: Goals){
     val waterAmount = remember{ mutableStateOf(TextFieldValue("150"))}
     val type = remember{ mutableStateOf(TextFieldValue("Water"))}
     AlertDialog(onDismissRequest = {
-        viewModel.popUpAddDrink()
-        },
+        viewModel.popUpAddWorkout()
+    },
         confirmButton = {
-                Button(onClick = {
-                    viewModel.updateWaterStats(
-                        Stats(
-                            water = waterAmount.value.text.toDouble(),
-                            waterType = type.value.text,
-                            date = LocalTime.now().withNano(0).withSecond(0).toString()
-                        ),
-                        Goals(
-                            1,
-                            water = goals.water,
-                            waterProgress = goals.waterProgress + waterAmount.value.text.toInt(),
-                            calories = goals.calories,
-                            caloriesProgress = goals.caloriesProgress,
-                            workouts = goals.workouts,
-                            workoutsProgress = goals.workoutsProgress,
-                            date = LocalDate.now().toString(),
-                        )
+            Button(onClick = {
+                viewModel.updateWorkoutStats(
+                    Stats(
+                        water = waterAmount.value.text.toDouble(),
+                        waterType = type.value.text,
+                        date = LocalTime.now().withNano(0).withSecond(0).toString()
+                    ),
+                    Goals(
+                        1,
+                        water = goals.water,
+                        waterProgress = goals.waterProgress + waterAmount.value.text.toInt(),
+                        calories = goals.calories,
+                        caloriesProgress = goals.caloriesProgress,
+                        workouts = goals.workouts,
+                        workoutsProgress = goals.workoutsProgress,
+                        date = LocalDate.now().toString(),
                     )
-                    viewModel.popUpAddDrink()
-                }) {
-                    Text("ADD")
-                }
+                )
+                viewModel.popUpAddWorkout()
+            }) {
+                Text("ADD")
+            }
         },
         title = {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
@@ -256,8 +279,8 @@ fun AddWater(viewModel: WaterScreenViewModel, goals: Goals){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
-    val waterAmount = remember{ mutableStateOf(TextFieldValue(goals.water.toString()))}
+fun ChangeWorkoutGoal(viewModel: WorkoutScreenViewModel, goals: Goals){
+    val workouts = remember{ mutableStateOf(TextFieldValue(goals.water.toString()))}
     AlertDialog(onDismissRequest = {
         viewModel.popUpChangeGoal()
     },
@@ -266,11 +289,11 @@ fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
                 viewModel.updateGoals(
                     Goals(
                         1,
-                        water = waterAmount.value.text.toInt(),
+                        water = goals.water ,
                         waterProgress = goals.waterProgress,
                         calories = goals.calories,
                         caloriesProgress = goals.caloriesProgress,
-                        workouts = goals.workouts,
+                        workouts = workouts.value.text.toInt(),
                         workoutsProgress = goals.workoutsProgress,
                         date = LocalDate.now().toString(),
                     )
@@ -289,9 +312,9 @@ fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
         text = {
             Column {
                 TextField(
-                    value = waterAmount.value,
-                    onValueChange = { waterAmount.value = it },
-                    label = { Text(text = "water amount") },
+                    value = workouts.value,
+                    onValueChange = { workouts.value = it },
+                    label = { Text(text = "workouts") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
             }

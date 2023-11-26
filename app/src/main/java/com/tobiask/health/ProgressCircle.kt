@@ -82,11 +82,12 @@ fun ProgressCircle(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(radius * 2f)
+                .combinedClickable(onClick = onClick, onLongClick = onLongClick)
         ) {
             Canvas(
                 modifier = Modifier
                     .size(radius * 2f)
-                    .combinedClickable(onClick = onClick)
+
             ) {
                 drawArc(
                     color = color,

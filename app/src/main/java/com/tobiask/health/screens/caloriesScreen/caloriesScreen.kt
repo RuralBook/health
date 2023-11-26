@@ -1,6 +1,5 @@
-package com.tobiask.health.screens.water_screen
+package com.tobiask.health.screens.caloriesScreen
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -29,7 +29,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,38 +59,34 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun WaterScreen(dao: DAO) {
+fun CaloriesScreen(dao: DAO) {
 
-    val context = LocalContext.current
-
-
-    val viewModel = viewModel<WaterScreenViewModel>(
+    val viewModel = viewModel<CaloriesScreenViewModel>(
         factory =
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return WaterScreenViewModel(dao) as T
+                return CaloriesScreenViewModel(dao) as T
             }
         }
     )
 
     val goals = viewModel.dao.getGoals(1).collectAsState(initial = Goals(id = 2, date = ""))
-    val stats = viewModel.dao.getWaterStats().collectAsState(initial = listOf(Stats(id = 2, date = "")))
+    val stats = viewModel.dao.getCaloriesStats().collectAsState(initial = listOf(Stats(id = 2, date = "")))
     val popUp = viewModel.addDrink.collectAsState()
     val popUpChangeGoal = viewModel.changeGoal.collectAsState()
     if (goals.value.id  != 2) {
-
         if (popUp.value){
-            AddWater(viewModel = viewModel, goals.value)
+            AddMeal(viewModel = viewModel, goals.value)
         }
 
         if (popUpChangeGoal.value){
-            ChangeWaterGoal(viewModel = viewModel, goals = goals.value)
+            ChangeCaloriesGoal(viewModel = viewModel, goals = goals.value)
         }
 
         Scaffold(Modifier.fillMaxSize(), topBar = {
             TopAppBar(title = {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    Text(text = stringResource(id = R.string.water), fontSize = 30.sp)
+                    Text(text = stringResource(id = R.string.calories), fontSize = 30.sp)
                 }
             })
         }, floatingActionButton = {
@@ -119,16 +113,14 @@ fun WaterScreen(dao: DAO) {
                             .height(300.dp)
                             .wrapContentWidth(Alignment.Start)
                     ) {
-                        ProgressCircle(percentage = (goals.value.waterProgress.toFloat() / goals.value.water),
-                            number = goals.value.water.toDouble(),
+                        ProgressCircle(percentage = (goals.value.caloriesProgress.toFloat() / goals.value.calories),
+                            number = goals.value.calories.toDouble(),
                             color = Color(0xff4cb9fa),
                             colorTrans = Color(0x8f4cb9fa),
                             radius = 140.dp,
                             textColor = MaterialTheme.colorScheme.onBackground,
                             description = "",
-                            onClick = {
-                                //Log.d("water", goals.value.waterProgress.toDouble().toString() + "|" + goals.value.water.toDouble().toString() + "|" + ((goals.value.waterProgress.toFloat() / goals.value.water)*100f).toString())
-                            },
+                            onClick = {},
                             onLongClick = {
                                 viewModel.popUpChangeGoal()
                             })
@@ -146,17 +138,16 @@ fun WaterScreen(dao: DAO) {
                             },
                             backgroundCardEndColor = MaterialTheme.colorScheme.secondary,
                             onBackgroundEndClick = {
-                                viewModel.deleteWaterStats(row)
+                                viewModel.deleteCaloriesStats(row)
                                 viewModel.updateGoals(Goals(
                                     id = goals.value.id,
-                                    water = goals.value.water,
-                                    waterProgress = goals.value.waterProgress - row.water.roundToInt(),
+                                    calories = goals.value.calories,
+                                    caloriesProgress = goals.value.caloriesProgress - row.calories.roundToInt(),
                                     date = goals.value.date
                                 ))
                             }
                         ) {
-                            WaterItem(date = row.date, amount = row.water.toInt(), type = row.waterType, percentage = ((row.water / goals.value.water)*100))
-                            //Log.d("percentage", ((row.water / goals.value.water)).toString())
+                            CaloriesItem(date = row.date, amount = row.calories.toInt(), percentage = ((row.calories / goals.value.calories)*100))
                         }
                         Spacer(modifier = Modifier.height(15.dp))
                     }
@@ -169,10 +160,9 @@ fun WaterScreen(dao: DAO) {
 
 
 @Composable
-fun WaterItem(
+fun CaloriesItem(
     date: String,
     amount: Int,
-    type: String,
     percentage: Double
 ) {
     ElevatedCard(
@@ -180,7 +170,7 @@ fun WaterItem(
         Modifier
             .padding(top = 10.dp)
             .fillMaxWidth()
-            , elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        , elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(Modifier.padding(15.dp)) {
             Row(
@@ -189,7 +179,6 @@ fun WaterItem(
             ) {
                 Text(text = date, fontWeight = FontWeight.SemiBold)
                 Text(text = "${amount}ML", fontWeight = FontWeight.Bold)
-                Text(text = type)
                 Text(text = "~ ${percentage.roundToInt()}%")
             }
         }
@@ -199,55 +188,47 @@ fun WaterItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddWater(viewModel: WaterScreenViewModel, goals: Goals){
-    val waterAmount = remember{ mutableStateOf(TextFieldValue("150"))}
-    val type = remember{ mutableStateOf(TextFieldValue("Water"))}
+fun AddMeal(viewModel: CaloriesScreenViewModel, goals: Goals){
+    val caloriesAmount = remember{ mutableStateOf(TextFieldValue("150"))}
     AlertDialog(onDismissRequest = {
         viewModel.popUpAddDrink()
-        },
+    },
         confirmButton = {
-                Button(onClick = {
-                    viewModel.updateWaterStats(
-                        Stats(
-                            water = waterAmount.value.text.toDouble(),
-                            waterType = type.value.text,
-                            date = LocalTime.now().withNano(0).withSecond(0).toString()
-                        ),
-                        Goals(
-                            1,
-                            water = goals.water,
-                            waterProgress = goals.waterProgress + waterAmount.value.text.toInt(),
-                            calories = goals.calories,
-                            caloriesProgress = goals.caloriesProgress,
-                            workouts = goals.workouts,
-                            workoutsProgress = goals.workoutsProgress,
-                            date = LocalDate.now().toString(),
-                        )
+            Button(onClick = {
+                viewModel.updateCaloriesStats(
+                    Stats(
+                        calories = caloriesAmount.value.text.toDouble(),
+                        date = LocalTime.now().withNano(0).withSecond(0).toString()
+                    ),
+                    Goals(
+                        1,
+                        water = goals.water,
+                        waterProgress = goals.waterProgress,
+                        calories = goals.calories,
+                        caloriesProgress = goals.caloriesProgress + caloriesAmount.value.text.toInt(),
+                        workouts = goals.workouts,
+                        workoutsProgress = goals.workoutsProgress,
+                        date = LocalDate.now().toString(),
                     )
-                    viewModel.popUpAddDrink()
-                }) {
-                    Text("ADD")
-                }
+                )
+                viewModel.popUpAddDrink()
+            }) {
+                Text("ADD")
+            }
         },
         title = {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically){
-                Text(text = "ADD DRINK", fontSize = 20.sp)
+                Text(text = "ADD MEAL", fontSize = 20.sp)
             }
 
         },
         text = {
             Column {
                 TextField(
-                    value = waterAmount.value,
-                    onValueChange = { waterAmount.value = it },
-                    label = { Text(text = "water amount") },
+                    value = caloriesAmount.value,
+                    onValueChange = { caloriesAmount.value = it },
+                    label = { Text(text = "calories amount") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                TextField(
-                    value = type.value,
-                    onValueChange = { type.value = it },
-                    label = { Text(text = "drink type") }
                 )
             }
         }
@@ -256,8 +237,8 @@ fun AddWater(viewModel: WaterScreenViewModel, goals: Goals){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
-    val waterAmount = remember{ mutableStateOf(TextFieldValue(goals.water.toString()))}
+fun ChangeCaloriesGoal(viewModel: CaloriesScreenViewModel, goals: Goals){
+    val caloriesAmount = remember{ mutableStateOf(TextFieldValue(goals.calories.toString()))}
     AlertDialog(onDismissRequest = {
         viewModel.popUpChangeGoal()
     },
@@ -266,9 +247,9 @@ fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
                 viewModel.updateGoals(
                     Goals(
                         1,
-                        water = waterAmount.value.text.toInt(),
+                        water = goals.water,
                         waterProgress = goals.waterProgress,
-                        calories = goals.calories,
+                        calories = caloriesAmount.value.text.toDouble().roundToInt(),
                         caloriesProgress = goals.caloriesProgress,
                         workouts = goals.workouts,
                         workoutsProgress = goals.workoutsProgress,
@@ -289,9 +270,9 @@ fun ChangeWaterGoal(viewModel: WaterScreenViewModel, goals: Goals){
         text = {
             Column {
                 TextField(
-                    value = waterAmount.value,
-                    onValueChange = { waterAmount.value = it },
-                    label = { Text(text = "water amount") },
+                    value = caloriesAmount.value,
+                    onValueChange = { caloriesAmount.value = it },
+                    label = { Text(text = "calories amount") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
             }
