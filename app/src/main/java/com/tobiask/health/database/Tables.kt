@@ -8,8 +8,8 @@ data class Goals(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val water: Double = 2000.0,
-    val waterProgress: Double = 0.0,
+    val water: Int = 2000,
+    val waterProgress: Int = 0,
     val calories: Double = 2500.0,
     val caloriesProgress: Double = 0.0,
     val workouts: Int = 5,
@@ -22,7 +22,7 @@ data class Goals(
 data class Stats(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-
+    val waterType: String = "water",
     val water: Double = 0.0,
     val calories: Double = 0.0,
     val workouts: Int = 0,

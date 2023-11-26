@@ -17,4 +17,8 @@ class MainScreenViewModel(val dao: DAO) : ViewModel() {
     fun deleteAllStats(){
         viewModelScope.launch { dao.delAllStats(); dao.updateGoals(Goals(id =1, date = LocalDate.now().toString())) }
     }
+
+    fun reset(){
+        viewModelScope.launch { dao.resetAllGoals();}
+    }
 }

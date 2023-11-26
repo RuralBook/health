@@ -21,6 +21,7 @@ import com.tobiask.health.navigation.Screen
 import com.tobiask.health.screens.mainScreen.DashboardScreen
 import com.tobiask.health.screens.water_screen.WaterScreen
 import com.tobiask.health.ui.theme.HealthTheme
+import kotlinx.coroutines.CoroutineScope
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

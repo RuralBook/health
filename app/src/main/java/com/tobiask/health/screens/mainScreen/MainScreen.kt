@@ -54,16 +54,18 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
         }
     )
 
+    viewModel.reset()
+
     val full = remember { mutableStateOf(true) }
-    val goals = viewModel.dao.getGoals(1).collectAsState(initial = listOf(Goals(id = 2, date = "")))
+    val goals = viewModel.dao.getGoals(1).collectAsState(initial = Goals(id = 2, date = ""))
     val stats = viewModel.dao.getStats(1).collectAsState(initial = listOf(Stats(id = 2, date = "")))
-    if (goals.value.isEmpty()) {
+    if (goals.value.id == 2) {
         viewModel.insertGoals()
         full.value = false
     }
 
-    if (goals.value.isNotEmpty() && goals.value[0].date != "") {
-        if (LocalDate.parse(goals.value[0].date).isBefore(LocalDate.now())) {
+    if (goals.value.id != 2 && goals.value.date != "") {
+        if (LocalDate.parse(goals.value.date).isBefore(LocalDate.now())) {
             viewModel.deleteAllStats()
         }
         full.value = true
@@ -81,8 +83,8 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                     .wrapContentWidth(Alignment.Start)
             ) {
                 ProgressCircle(
-                    percentage = if (goals.value.isNotEmpty()) (goals.value[0].workoutsProgress * goals.value[0].workouts).toFloat() else 0f,
-                    number = if (goals.value.isNotEmpty()) goals.value[0].workouts.toDouble() else 0.0,
+                    percentage = if (goals.value.id != 2) (goals.value.workoutsProgress * goals.value.workouts).toFloat() else 0f,
+                    number = if (goals.value.id != 2) goals.value.workouts.toDouble() else 0.0,
                     color = Color(0xffc4342d),
                     colorTrans = Color(0x8fc4342d),
                     radius = 120.dp,
@@ -126,8 +128,8 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                     .wrapContentWidth(Alignment.Start)
             ) {
                 ProgressCircle(
-                    percentage = if(goals.value.isNotEmpty()) (goals.value[0].waterProgress / goals.value[0].water).toFloat() else 0f,
-                    number = if(goals.value.isNotEmpty()) goals.value[0].water else 0.0,
+                    percentage = if(goals.value.id != 2) (goals.value.waterProgress.toFloat() / goals.value.water) else 0f,
+                    number = if(goals.value.id != 2) goals.value.water.toDouble() else 0.0,
                     color = Color(0xff4cb9fa),
                     colorTrans = Color(0x8f4cb9fa),
                     radius = 90.dp,
@@ -140,7 +142,7 @@ fun DashboardScreen(navController: NavController, dao: DAO) {
                 )
             }
         }
-        Column(Modifier.fillMaxSize(0.5f)) {
+        Column(Modifier.fillMaxSize(0.5f), verticalArrangement = Arrangement.Center) {
             Button(onClick = { viewModel.deleteAllStats() }) {
                 Text(text = "Reset")
             }

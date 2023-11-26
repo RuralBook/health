@@ -1,6 +1,7 @@
 package com.tobiask.health
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 
 
 @SuppressLint("RememberReturnType")
@@ -102,12 +104,13 @@ fun ProgressCircle(
                 )
             }
             Text(
-                text = (curPercentage.value * number).toInt().toShort().toString() + "\n /" + number.toInt().toString(),
+                text = (curPercentage.value * number).roundToInt().toString(), //(curPercentage.value * number).toInt().toShort().toString() + "\n /" + number.toInt().toString(),
                 color = textColor,
                 fontSize = fontSize,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
+            Log.d("water", number.toDouble().toString())
         }
         Spacer(modifier = Modifier.height(5.dp))
         Text(

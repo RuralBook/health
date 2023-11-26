@@ -1,6 +1,7 @@
 package com.tobiask.health.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -14,6 +15,9 @@ sealed interface DAO{
     @Insert(Stats::class)
     suspend fun insertStats(stats: Stats)
 
+    @Delete(Stats::class)
+    suspend fun deleteStats(stats: Stats)
+
     @Update(Goals::class)
     suspend fun updateGoals(goals: Goals)
 
@@ -21,7 +25,7 @@ sealed interface DAO{
     suspend fun insertGoals(goals: Goals)
 
     @Query("SELECT * FROM goals WHERE id LIKE :id")
-    fun getGoals(id: Int): Flow<List<Goals>>
+    fun getGoals(id: Int): Flow<Goals>
 
     @Query("SELECT * FROM stats WHERE id LIKE :id")
     fun getStats(id: Int): Flow<List<Stats>>
@@ -31,6 +35,9 @@ sealed interface DAO{
 
     @Query("Delete FROM stats")
     suspend fun delAllStats()
+
+    @Query("DELETE FROM Goals WHERE id != 1")
+    suspend fun resetAllGoals()
 
 
 }

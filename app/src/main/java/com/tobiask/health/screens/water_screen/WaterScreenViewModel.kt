@@ -13,7 +13,8 @@ class WaterScreenViewModel(val dao: DAO): ViewModel() {
 
     private val _addDrink = MutableStateFlow(false)
     val addDrink = _addDrink.asStateFlow()
-    fun popUpDrink(){
+
+    fun popUpAddDrink(){
         _addDrink.value = !_addDrink.value
     }
 
@@ -28,6 +29,18 @@ class WaterScreenViewModel(val dao: DAO): ViewModel() {
         viewModelScope.launch {
             dao.insertStats(stats)
             dao.updateGoals(goals)
+        }
+    }
+
+    fun updateGoals(goals: Goals){
+        viewModelScope.launch {
+            dao.updateGoals(goals)
+        }
+    }
+
+    fun deleteWaterStats(stats: Stats){
+        viewModelScope.launch{
+            dao.deleteStats(stats)
         }
     }
 
