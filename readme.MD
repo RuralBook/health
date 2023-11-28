@@ -3,10 +3,10 @@
 ## Features:
    - Hydration tracking -> per day
    - Calories tracking -> per day
-	  - Workout tracking -> per month
+	 - Workout tracking -> per month
 
 ## Kown issues
-	-> none
+  -> none
 
 ## Comming Soon
-	->
+  ->
