@@ -6,7 +6,7 @@
 	 - Workout tracking -> per month
 
 ## Kown issues
-  -> none
+  - none
 
 ## Comming Soon
-  ->
+  -
